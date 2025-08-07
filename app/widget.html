@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+  </head>
+  <body>
+      <div class="form-container">
+      <form id="record-form" novalidate>
+        <label for="cert-vat-de-registration" style="margin-top: 16px; display: block;">Certificate of VAT De-Registration 
+          <span title="Drag and drop your file here, or click “Choose File” to upload the Certificate of VAT De-Registration." style="cursor: help; color: #555;">&#9432;</span>
+          <span style="color: red;">*</span>
+        </label>
+        <input type="file" id="cert-vat-de-registration" name="cert-vat-de-registration" accept=".pdf,.jpg,.jpeg,.png" required />
+        <span class="error-message" id="error-cert-vat-de-registration" style="color: red; font-size: 12px;"></span>
+
+        <label for="effective-de-registration-date">Effective De-registration Date <span style="color: red;">*</span></label>
+        <input type="date" id="effective-de-registration-date" name="effective-de-registration-date" required />
+        <span class="error-message" id="error-effective-de-registration-date"></span>
+
+        <label for="reason-de-registration">Reason for De-registration <span style="color: red;">*</span></label>
+        <textarea id="reason-de-registration" name="reason-de-registration" rows="4" required></textarea>
+        <span class="error-message" id="error-reason-de-registration"></span>
+
+
+        <button class="submit-button" type="submit" id="submit_button_id">Submit</button>
+      </form>
+    </div>
+
+    <div>
+      <button class="close-button" onclick="closeWidget()">×</button>
+    </div>
+
+    <script src="js/app.js"></script>
+
+  </body>
+</html>
