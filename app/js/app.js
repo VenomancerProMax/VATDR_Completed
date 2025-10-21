@@ -12,7 +12,16 @@ ZOHO.embeddedApp.on("PageLoad", async (entity) => {
     });
     const applicationData = appResponse.data[0];
     app_id = applicationData.id;
-    account_id = applicationData.Account_Name.id;
+    
+    // Check for Account ID and handle if missing
+    if (!applicationData.Account_Name || !applicationData.Account_Name.id) {
+        console.error("Application record is missing a linked Account ID. Cannot proceed with data fetch.");
+        // Prevent setting account_id if null/undefined
+        // The submission logic will catch this later, but useful to log now.
+    } else {
+        account_id = applicationData.Account_Name.id;
+    }
+
 
   } catch (err) {
     console.error(err);
@@ -116,6 +125,7 @@ async function update_record(event = null) {
 
   const effectiveDeRegDate = document.getElementById("effective-de-registration-date")?.value;
   const reasonForDeReg = document.getElementById("reason-de-registration")?.value;
+  const safe_account_id = account_id ? account_id.trim() : "";
 
   if (!cachedFile || !cachedBase64) {
     showError("cert-vat-de-registration", "Please upload the Certificate of VAT De-Registration.");
@@ -129,6 +139,12 @@ async function update_record(event = null) {
     showError("reason-de-registration", "Reason for De-registration is required.");
     hasError = true;
   }
+
+  if (!safe_account_id) {
+    showError("submit_button_id", "Error: Associated Account ID is missing. Cannot proceed.");
+    hasError = true;
+    console.error("FATAL ERROR: Account ID is missing.");
+  }
 
   if (hasError) {
     if (submitBtn) {
@@ -155,14 +171,26 @@ async function update_record(event = null) {
       }
     });
 
-    await ZOHO.CRM.API.updateRecord({
-      Entity: "Accounts",
-      APIData: {
-        id: account_id,
-        CT_Status: "Cancelled / De-registered",
-        Effective_De_registration_Date_VAT: effectiveDeRegDate
-      }
-    });
+    // Pass ALL required data to the Deluge function via JSON string
+    const func_name = "ta_vatdr_complete_to_auth_update_account";
+    const req_data = {
+        "arguments": JSON.stringify({
+            "account_id": safe_account_id,
+            "effective_de_reg_date": effectiveDeRegDate,
+        })
+    };
+
+    const accountResponse = await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
+    console.log("Account Update Function Response:", accountResponse);
+
+    // await ZOHO.CRM.API.updateRecord({
+    //   Entity: "Accounts",
+    //   APIData: {
+    //     id: account_id,
+    //     CT_Status: "Cancelled / De-registered",
+    //     Effective_De_registration_Date_VAT: effectiveDeRegDate
+    //   }
+    // });
 
     await uploadFileToCRM();
     await ZOHO.CRM.BLUEPRINT.proceed();
