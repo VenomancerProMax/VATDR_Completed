@@ -183,15 +183,6 @@ async function update_record(event = null) {
     const accountResponse = await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
     console.log("Account Update Function Response:", accountResponse);
 
-    // await ZOHO.CRM.API.updateRecord({
-    //   Entity: "Accounts",
-    //   APIData: {
-    //     id: account_id,
-    //     CT_Status: "Cancelled / De-registered",
-    //     Effective_De_registration_Date_VAT: effectiveDeRegDate
-    //   }
-    // });
-
     await uploadFileToCRM();
     await ZOHO.CRM.BLUEPRINT.proceed();
     await ZOHO.CRM.UI.Popup.closeReload();
