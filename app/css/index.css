@@ -70,6 +70,7 @@ textarea:focus {
   background: #fff;
   font-size: 12px;
   color: #666;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 #drop-zone.dragover {
@@ -96,10 +97,15 @@ textarea:focus {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .submit-button:hover {
   background-color: #357ABD;
+}
+
+.submit-button:active {
+  transform: scale(0.97);
 }
 
 .close-button {
@@ -148,7 +154,7 @@ textarea:focus {
 }
 
 .progress-bar-fill.animate {
-  animation: fillAnimation 2s ease-in-out forwards;
+  animation: fillAnimation 2.5s ease-in-out forwards;
 }
 
 @keyframes fillAnimation {
@@ -176,9 +182,32 @@ textarea:focus {
   border-radius: 12px;
   width: 320px;
   text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .success-title { color: #28a745; }
 .error-title { color: #dc3545; }
-.success-btn { background-color: #28a745 !important; }
-.error-btn { background-color: #dc3545 !important; }
+
+.success-btn { 
+  background-color: #28a745 !important; 
+}
+
+.success-btn:hover {
+  background-color: #218838 !important;
+}
+
+.success-btn:active {
+  transform: scale(0.96);
+}
+
+.error-btn { 
+  background-color: #dc3545 !important; 
+}
+
+.error-btn:hover {
+  background-color: #c82333 !important;
+}
+
+.error-btn:active {
+  transform: scale(0.96);
+}

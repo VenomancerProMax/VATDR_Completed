@@ -43,19 +43,31 @@ function showError(id, msg) {
     if (e) e.textContent = msg;
 }
 
+// Fixed handleFile to match the Perfect Code implementation
 async function handleFile(file) {
     if(!file) return;
-    if(file.size > 10 * 1024 * 1024) {
-        showError("cert-vat-de-registration", "File size must not exceed 10MB.");
+    clearErrors();
+
+    if(file.size > 20 * 1024 * 1024) {
+        showError("cert-vat-de-registration", "File size must not exceed 20MB.");
         return;
     }
-    document.getElementById("file-label-text").textContent = "File: " + file.name;
-    const reader = new FileReader();
-    reader.onload = () => {
+
+    try {
+        const content = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+
         cachedFile = file;
-        cachedBase64 = reader.result.split(",")[1];
-    };
-    reader.readAsDataURL(file);
+        cachedBase64 = content;
+        document.getElementById("file-label-text").textContent = "File: " + file.name;
+    } catch (err) {
+        console.error("Error reading file:", err);
+        showError("cert-vat-de-registration", "Failed to read file.");
+    }
 }
 
 dropZone.onclick = () => fileInput.click();
@@ -88,7 +100,7 @@ document.getElementById("record-form").onsubmit = async (e) => {
     const reason = document.getElementById("reason-de-registration").value.trim();
 
     let hasError = false;
-    if (!cachedFile) { showError("cert-vat-de-registration", "Certificate is required."); hasError = true; }
+    if (!cachedFile || !cachedBase64) { showError("cert-vat-de-registration", "Certificate is required."); hasError = true; }
     if (!effDate) { showError("effective-de-registration-date", "Effective Date is required."); hasError = true; }
     if (!reason) { showError("reason-de-registration", "Reason is required."); hasError = true; }
 
@@ -115,8 +127,14 @@ document.getElementById("record-form").onsubmit = async (e) => {
             arguments: JSON.stringify({ account_id, effective_de_reg_date: effDate })
         });
 
+        // Fixed Attachment implementation
         await ZOHO.CRM.API.attachFile({
-            Entity: "Applications1", RecordID: app_id, File: { Name: cachedFile.name, Content: cachedBase64 }
+            Entity: "Applications1", 
+            RecordID: app_id, 
+            File: { 
+                Name: cachedFile.name, 
+                Content: cachedBase64 
+            }
         });
 
         document.getElementById("upload-buffer").classList.add("hidden");
