@@ -1,37 +1,51 @@
 let app_id, account_id, cachedFile, cachedBase64;
+let toastTimeout;
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("cert-vat-de-registration");
 
-function showModal(type, title, message) {
-    const modal = document.getElementById("custom-modal");
-    const titleEl = document.getElementById("modal-title");
-    const iconEl = document.getElementById("modal-icon");
-    const btn = document.getElementById("modal-close");
+function showToast(type, title, message, duration = 4000) {
+    const toast = document.getElementById("toast");
+    const iconEl = document.getElementById("toast-icon");
+    const titleEl = document.getElementById("toast-title");
+    const progressBar = document.getElementById("toast-progress-bar");
 
     titleEl.textContent = title;
-    document.getElementById("modal-message").textContent = message;
+    document.getElementById("toast-message").textContent = message;
+
+    toast.classList.remove("toast-success", "toast-error", "toast-show", "toast-hide", "hidden");
 
     if (type === "success") {
-        titleEl.className = "success-title";
+        toast.classList.add("toast-success");
         iconEl.textContent = "✅";
-        btn.className = "submit-button success-btn";
-        btn.onclick = async () => {
-            btn.disabled = true;
-            btn.textContent = "Finalizing...";
-            try {
-                await ZOHO.CRM.BLUEPRINT.proceed();
-                setTimeout(() => { top.location.href = top.location.href; }, 1000);
-            } catch (e) {
-                ZOHO.CRM.UI.Popup.closeReload();
-            }
-        };
     } else {
-        titleEl.className = "error-title";
+        toast.classList.add("toast-error");
         iconEl.textContent = "❌";
-        btn.className = "submit-button error-btn";
-        btn.onclick = () => modal.classList.add("hidden");
     }
-    modal.classList.remove("hidden");
+
+    // restart slide-in animation
+    void toast.offsetWidth;
+    toast.classList.add("toast-show");
+
+    // restart progress bar animation
+    progressBar.style.animation = "none";
+    void progressBar.offsetWidth;
+    progressBar.style.animation = `toastProgress ${duration}ms linear forwards`;
+
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove("toast-show");
+        toast.classList.add("toast-hide");
+        setTimeout(() => toast.classList.add("hidden"), 300);
+    }, duration);
+}
+
+async function finalizeSuccess() {
+    try {
+        await ZOHO.CRM.BLUEPRINT.proceed();
+        setTimeout(() => { top.location.href = top.location.href; }, 1000);
+    } catch (e) {
+        ZOHO.CRM.UI.Popup.closeReload();
+    }
 }
 
 function clearErrors() {
@@ -138,12 +152,13 @@ document.getElementById("record-form").onsubmit = async (e) => {
         });
 
         document.getElementById("upload-buffer").classList.add("hidden");
-        showModal("success", "Success!", "Record updated successfully. Click OK to reload.");
+        showToast("success", "Success!", "Record updated successfully.");
+        setTimeout(() => { finalizeSuccess(); }, 2500);
     } catch (err) {
         btn.disabled = false;
         btn.textContent = "Submit";
         document.getElementById("upload-buffer").classList.add("hidden");
-        showModal("error", "Error", "An unexpected error occurred. Please try again.");
+        showToast("error", "Error", "An unexpected error occurred. Please try again.");
     }
 };
 
